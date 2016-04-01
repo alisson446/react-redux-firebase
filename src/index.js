@@ -35,7 +35,7 @@ const todos = (state = [], action) => {
     case 'ADD_TODO':
       return [
         ...state,
-        todo(undefined, action);
+        todo(undefined, action)
       ];
 
     case 'TOGGLE_TODO':
@@ -63,10 +63,7 @@ const todoApp = combineReducers({
   visibilityFilter
 });
 
-const logger = createLogger({
-  collapsed: true,
-  stateTransformer: (state) => state.toJS()
-});
+const logger = createLogger();
 
 const store = createStore(todoApp, applyMiddleware(thunk, logger));
 
@@ -79,29 +76,29 @@ class TodoApp extends Component {
           store.dispatch({
             type: 'ADD_TODO',
             text: 'todo',
-            id: idCount++;
+            id: idCount++
           });          
         }}>
           Add Todo
         </button>
 
         <ul>
-          {this.props.todos.map(todo => {
+          {this.props.todos.map(todo => 
             <li key = {todo.id}>
               {todo.text}
             </li>
-          })}
+          )}
         </ul>
       </div>
     );
   }
 }
 
-const render = () => {
+const renderApp = () => {
   render(<TodoApp todos = {store.getState().todos}/>, 
   document.getElementById('root'));
 };
 
-store.subscribe(render);
-render();
+store.subscribe(renderApp);
+renderApp();
 
