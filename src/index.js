@@ -49,6 +49,19 @@ const todos = (state = [], action) => {
   }
 };
 
+let idCount = 0;
+const localAddTodo = (text) => {
+  return { type: 'ADD_TODO', id: idCount++, text }
+};
+
+const localToggleTodo = (id) => {
+  return { type: 'TOGGLE_TODO', id };
+};
+
+const localSetVisibilityFilter = (filter) => {
+  return { type: 'SET_VISIBILITY_FILTER', filter };
+};
+
 const visibilityFilter = (state = 'SHOW_ALL', action) => {
   switch(action.type) {
     case 'SET_VISIBILITY_FILTER':
@@ -59,14 +72,14 @@ const visibilityFilter = (state = 'SHOW_ALL', action) => {
   }
 };
 
-const todoApp = combineReducers({
+const reducerTodoApp = combineReducers({
   todos,
   visibilityFilter
 });
 
 const logger = createLogger();
 
-const AddTodo = (props, { store }) => {
+let AddTodo = ({ dispatch }) => {
   let input;
 
   return (
@@ -75,11 +88,7 @@ const AddTodo = (props, { store }) => {
         input = node;
       }} />
       <button onClick={() => {
-        store.dispatch({
-          type: 'ADD_TODO',
-          id: idCount++,
-          text: input.value
-        })
+        dispatch(localAddTodo(input.value));
         input.value = '';
       }}>
         Add Todo
@@ -88,9 +97,7 @@ const AddTodo = (props, { store }) => {
   );
 };
 
-AddTodo.contextTypes = {
-  store: React.PropTypes.object
-};
+AddTodo = connect()(AddTodo);
 
 const getVisibleTodos = (todos, filter) => {
   switch(filter) {
@@ -117,38 +124,39 @@ const Todo = ({ completed, text, onClick }) => (
   </li>
 );
 
-const TodoList = ({ todos, onTodoClick }) => (
-  <ul>
-    {todos.map(todo =>
-      <Todo
-        key = {todo.id}
-        {...todo}
-        onClick = { onTodoClick(todo.id) }
-      />
-    )}
-  </ul>
-);
+const TodoList = (props) => {
+  const { todos, onTodoClick } = props;
 
-const mapStateToProps = (state) => {
+  return (
+    <ul>
+      {todos.map(todo =>
+        <Todo
+          key = {todo.id}
+          {...todo}
+          onClick = { onTodoClick(todo.id) }
+        />
+      )}
+    </ul>
+  );
+}
+
+const mapStateToTodoListProps = (state) => {
   return {
     todos: getVisibleTodos(state.todos, state.visibilityFilter)
   };
 };
 
-const mapDispatchToProps = (dispatch) => {
+const mapDispatchToTodoListProps = (dispatch) => {
   return {
     onTodoClick: (id) => {
-      dispatch({
-        type: 'TOGGLE_TODO',
-        id
-      })
+      dispatch(localToggleTodo(id));
     }
   };
 };
 
 const VisibleTodoList = connect(
-  mapStateToProps,
-  mapDispatchToProps
+  mapStateToTodoListProps,
+  mapDispatchToTodoListProps
 )(TodoList);
 
 const Footer = () => (
@@ -190,46 +198,25 @@ const Link = ({ active, children, onClick }) => {
   );
 };
 
-class FilterLink extends Component {
-  componentDidMount() {
-    const { store } = this.context;
-    this.unsubscribe = store.subscribe(() =>
-      this.forceUpdate()
-    );
-  }
-
-  componentWillUnmount() {
-    this.unsubscribe();
-  }
-
-  render() {
-    const props = this.props;
-    const { store } = this.context;
-    const state = store.getState();
-
-    return (
-      <Link
-        active={
-          props.filter === state.visibilityFilter
-        }
-        onClick={() =>
-          store.dispatch({
-            type: 'SET_VISIBILITY_FILTER',
-            filter: props.filter
-          })
-        }
-      >
-        {props.children}
-      </Link>
-    );
-  }
-}
-
-FilterLink.contextTypes = {
-  store: React.PropTypes.object
+const mapStateToLinkProps = (state, ownProps) => {
+  return {
+    active: ownProps.filter === state.visibilityFilter
+  };
 };
 
-let idCount = 0;
+const mapDispatchToLinkProps = (dispatch, ownProps) => {
+  return {
+    onClick: () => {
+      dispatch(localSetVisibilityFilter(ownProps.filter));
+    }
+  };
+};
+
+const FilterLink = connect(
+  mapStateToLinkProps,
+  mapDispatchToLinkProps
+)(Link);
+
 const TodoApp = () => {
   return (
     <div>
@@ -241,7 +228,7 @@ const TodoApp = () => {
 }
 
 render(
-  <Provider store={createStore(TodoApp)}>
+  <Provider store={createStore(reducerTodoApp, applyMiddleware(thunk, logger))}>
     <TodoApp />
   </Provider>,
 document.getElementById('root'));
