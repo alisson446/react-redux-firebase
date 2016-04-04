@@ -124,16 +124,16 @@ const Todo = ({ completed, text, onClick }) => (
   </li>
 );
 
-const TodoList = (props) => {
-  const { todos, onTodoClick } = props;
-
+const TodoList = ({ todos, onTodoClick }) => {
   return (
     <ul>
       {todos.map(todo =>
         <Todo
           key = {todo.id}
           {...todo}
-          onClick = { onTodoClick(todo.id) }
+          onClick = {() => {
+            onTodoClick(todo.id);
+          }}
         />
       )}
     </ul>
