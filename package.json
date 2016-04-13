@@ -6,6 +6,9 @@
     "clean": "rimraf dist",
     "build:webpack": "cross-env NODE_ENV=production webpack --config webpack.config.prod.js",
     "build": "npm run clean && npm run build:webpack",
+    "test": "mocha src/**/index.spec.js --recursive --require babel-register --require env-test",
+    "test:watch": "mocha src/**/*.spec.js --recursive --watch --require babel-register --require env-test",
+    "test-jest": "jest src/**/*.spec.js",
     "start": "node devServer.js",
     "lint": "eslint src"
   },
@@ -35,8 +38,11 @@
   "devDependencies": {
     "babel-core": "^6.6.5",
     "babel-eslint": "^5.0.0-beta4",
+    "babel-jest": "^10.0.2",
     "babel-loader": "^6.2.4",
+    "babel-polyfill": "^6.7.4",
     "babel-preset-es2015": "^6.3.13",
+    "babel-preset-jest": "^11.0.0",
     "babel-preset-react": "^6.3.13",
     "babel-preset-react-hmre": "^1.1.1",
     "cross-env": "^1.0.7",
@@ -45,20 +51,35 @@
     "eslint-plugin-react": "^3.11.3",
     "eventsource-polyfill": "^0.9.6",
     "express": "^4.13.3",
+    "jest-cli": "^0.10.2",
+    "jsdomify": "^2.1.0",
     "rimraf": "^2.4.3",
     "webpack": "^1.12.9",
     "webpack-dev-middleware": "^1.4.0",
     "webpack-hot-middleware": "^2.9.1"
   },
   "dependencies": {
+    "chai": "^3.5.0",
+    "env-test": "^1.0.0",
     "firebase": "^2.4.1",
     "immutable": "^3.7.6",
+    "jest": "^0.1.40",
     "lodash": "^4.6.1",
+    "mocha": "^2.4.5",
     "react": "^0.14.7",
+    "react-addons-test-utils": "^0.14.8",
     "react-dom": "^0.14.7",
+    "react-redux": "~4.4.1",
+    "react-shallow-render": "^1.0.1",
     "redux": "^3.3.1",
     "redux-logger": "^2.6.1",
-    "redux-thunk": "^2.0.1",
-    "react-redux": "~4.4.1"
+    "redux-thunk": "^2.0.1"
+  },
+  "jest": {
+    "unmockedModulePathPatterns": [
+      "<rootDir>/node_modules/react",
+      "<rootDir>/node_modules/react-dom",
+      "<rootDir>/node_modules/react-addons-test-utils"
+    ]
   }
 }
